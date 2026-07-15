@@ -306,7 +306,111 @@ def add_client():
 
         return "Client Added Successfully!"
 
-    return render_template("add_client.html")   
+    return render_template("add_client.html")
+
+# ---------------- VIEW CLIENTS ---------------- #
+
+@app.route("/clients")
+def clients():
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM clients")
+
+    clients = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "clients.html",
+        clients=clients
+    )
+
+# ---------------- EDIT CLIENT ---------------- #
+
+@app.route("/edit_client/<int:id>", methods=["GET", "POST"])
+def edit_client(id):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    if request.method == "POST":
+
+        client_name = request.form["client_name"]
+        company_name = request.form["company_name"]
+        email = request.form["email"]
+        phone = request.form["phone"]
+        project_name = request.form["project_name"]
+        status = request.form["status"]
+
+        cursor.execute(
+            """
+            UPDATE clients
+            SET client_name=%s,
+                company_name=%s,
+                email=%s,
+                phone=%s,
+                project_name=%s,
+                status=%s
+            WHERE id=%s
+            """,
+            (
+                client_name,
+                company_name,
+                email,
+                phone,
+                project_name,
+                status,
+                id
+            )
+        )
+
+        conn.commit()
+        conn.close()
+
+        return redirect(url_for("clients"))
+
+    cursor.execute(
+        "SELECT * FROM clients WHERE id=%s",
+        (id,)
+    )
+
+    client = cursor.fetchone()
+
+    conn.close()
+
+    return render_template(
+        "edit_client.html",
+        client=client
+    )
+
+# ---------------- DELETE CLIENT ---------------- #
+
+@app.route("/delete_client/<int:id>")
+def delete_client(id):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "DELETE FROM clients WHERE id=%s",
+        (id,)
+    )
+
+    conn.commit()
+    conn.close()
+
+    return redirect(url_for("clients"))   
 
 # ---------------- LOGOUT ---------------- #
 
