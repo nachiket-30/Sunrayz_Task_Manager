@@ -410,7 +410,120 @@ def delete_client(id):
     conn.commit()
     conn.close()
 
-    return redirect(url_for("clients"))   
+    return redirect(url_for("clients"))
+
+# ---------------- VIEW TASKS ---------------- #
+
+@app.route("/tasks")
+def tasks():
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        SELECT
+            tasks.id,
+            tasks.title,
+            users.name,
+            tasks.status,
+            tasks.priority,
+            tasks.due_date
+        FROM tasks
+        JOIN users
+        ON tasks.assigned_to = users.id
+        ORDER BY tasks.id DESC
+        """
+    )
+
+    tasks = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "tasks.html",
+        tasks=tasks
+    )
+
+# ---------------- EDIT TASK ---------------- #
+
+@app.route("/edit_task/<int:id>", methods=["GET", "POST"])
+def edit_task(id):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    if request.method == "POST":
+
+        title = request.form["title"]
+        description = request.form["description"]
+        priority = request.form["priority"]
+        due_date = request.form["due_date"]
+        status = request.form["status"]
+
+        cursor.execute("""
+            UPDATE tasks
+            SET title=%s,
+                description=%s,
+                priority=%s,
+                due_date=%s,
+                status=%s
+            WHERE id=%s
+        """,
+        (
+            title,
+            description,
+            priority,
+            due_date,
+            status,
+            id
+        ))
+
+        conn.commit()
+        conn.close()
+
+        return redirect(url_for("tasks"))
+
+    cursor.execute(
+        "SELECT * FROM tasks WHERE id=%s",
+        (id,)
+    )
+
+    task = cursor.fetchone()
+
+    conn.close()
+
+    return render_template(
+        "edit_task.html",
+        task=task
+    )
+
+# ---------------- DELETE TASK ---------------- #
+
+@app.route("/delete_task/<int:id>")
+def delete_task(id):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "DELETE FROM tasks WHERE id=%s",
+        (id,)
+    )
+
+    conn.commit()
+    conn.close()
+
+    return redirect(url_for("tasks"))
 
 # ---------------- LOGOUT ---------------- #
 
