@@ -62,13 +62,39 @@ def login():
                 )
                 pending_count = cursor.fetchone()[0]
 
+                cursor.execute(
+                    "SELECT COUNT(*) FROM clients"
+                )
+                client_count = cursor.fetchone()[0]
+
+                cursor.execute(
+                    "SELECT COUNT(*) FROM tasks WHERE status='Completed'"
+                )
+                completed_count = cursor.fetchone()[0]
+
+                cursor.execute(
+                    "SELECT COUNT(*) FROM tasks WHERE priority='High'"
+                )
+                high_priority_count = cursor.fetchone()[0]
+
+                cursor.execute("""
+                    SELECT COUNT(*)
+                    FROM tasks
+                    WHERE DATE(due_date)=CURDATE()
+                """)
+                today_count = cursor.fetchone()[0]
+
                 conn.close()
 
                 return render_template(
                     "admin_dashboard.html",
                     employee_count=employee_count,
                     task_count=task_count,
-                    pending_count=pending_count
+                    pending_count=pending_count,
+                    client_count=client_count,
+                    completed_count=completed_count,
+                    high_priority_count=high_priority_count,
+                    today_count=today_count
                 )
 
             # ---------------- EMPLOYEE ---------------- #
