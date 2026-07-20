@@ -147,16 +147,30 @@ def employees():
     if "user_id" not in session:
         return redirect(url_for("login"))
 
+    search = request.args.get("search")
+
     conn = get_connection()
     cursor = conn.cursor()
 
-    cursor.execute(
-        """
-        SELECT id,name,email
-        FROM users
-        WHERE role='employee'
-        """
-    )
+    if search:
+
+        cursor.execute("""
+            SELECT id, name, email
+            FROM users
+            WHERE role='employee'
+            AND (
+                name LIKE %s
+                OR email LIKE %s
+            )
+        """, (f"%{search}%", f"%{search}%"))
+
+    else:
+
+        cursor.execute("""
+            SELECT id, name, email
+            FROM users
+            WHERE role='employee'
+        """)
 
     employees = cursor.fetchall()
 
@@ -316,10 +330,28 @@ def clients():
     if "user_id" not in session:
         return redirect(url_for("login"))
 
+    search = request.args.get("search")
+
     conn = get_connection()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT * FROM clients")
+    if search:
+
+        cursor.execute("""
+            SELECT *
+            FROM clients
+            WHERE client_name LIKE %s
+               OR company_name LIKE %s
+               OR email LIKE %s
+        """, (
+            f"%{search}%",
+            f"%{search}%",
+            f"%{search}%"
+        ))
+
+    else:
+
+        cursor.execute("SELECT * FROM clients")
 
     clients = cursor.fetchall()
 
@@ -329,7 +361,6 @@ def clients():
         "clients.html",
         clients=clients
     )
-
 # ---------------- EDIT CLIENT ---------------- #
 
 @app.route("/edit_client/<int:id>", methods=["GET", "POST"])
@@ -420,24 +451,48 @@ def tasks():
     if "user_id" not in session:
         return redirect(url_for("login"))
 
+    search = request.args.get("search")
+
     conn = get_connection()
     cursor = conn.cursor()
 
-    cursor.execute(
-        """
-        SELECT
-            tasks.id,
-            tasks.title,
-            users.name,
-            tasks.status,
-            tasks.priority,
-            tasks.due_date
-        FROM tasks
-        JOIN users
-        ON tasks.assigned_to = users.id
-        ORDER BY tasks.id DESC
-        """
-    )
+    if search:
+
+        cursor.execute("""
+            SELECT
+                tasks.id,
+                tasks.title,
+                users.name,
+                tasks.status,
+                tasks.priority,
+                tasks.due_date
+            FROM tasks
+            JOIN users
+            ON tasks.assigned_to = users.id
+            WHERE
+                tasks.title LIKE %s
+                OR users.name LIKE %s
+                OR tasks.status LIKE %s
+        """, (
+            f"%{search}%",
+            f"%{search}%",
+            f"%{search}%"
+        ))
+
+    else:
+
+        cursor.execute("""
+            SELECT
+                tasks.id,
+                tasks.title,
+                users.name,
+                tasks.status,
+                tasks.priority,
+                tasks.due_date
+            FROM tasks
+            JOIN users
+            ON tasks.assigned_to = users.id
+        """)
 
     tasks = cursor.fetchall()
 
@@ -447,7 +502,6 @@ def tasks():
         "tasks.html",
         tasks=tasks
     )
-
 # ---------------- EDIT TASK ---------------- #
 
 @app.route("/edit_task/<int:id>", methods=["GET", "POST"])

@@ -16,6 +16,33 @@
         All Clients
     </h2>
 
+    <!-- Search Form -->
+
+    <form method="GET" action="/clients" class="mb-4">
+
+        <div class="input-group">
+
+            <input
+                type="text"
+                name="search"
+                class="form-control"
+                placeholder="Search Client, Company or Email"
+                value="{{ request.args.get('search','') }}">
+
+            <button class="btn btn-primary">
+                Search
+            </button>
+
+            <a href="/clients" class="btn btn-secondary">
+                Reset
+            </a>
+
+        </div>
+
+    </form>
+
+    <!-- Clients Table -->
+
     <table class="table table-bordered table-hover">
 
         <thead class="table-dark">
@@ -52,18 +79,14 @@
             <td>
 
                 <a href="/edit_client/{{ client[0] }}"
-                class="btn btn-warning btn-sm">
-
+                   class="btn btn-warning btn-sm">
                     Edit
-
                 </a>
 
                 <a href="/delete_client/{{ client[0] }}"
-                class="btn btn-danger btn-sm"
-                onclick="return confirm('Are you sure you want to delete this client?')">
-
+                   class="btn btn-danger btn-sm"
+                   onclick="return confirm('Are you sure you want to delete this client?')">
                     Delete
-                    
                 </a>
 
             </td>
@@ -71,6 +94,20 @@
         </tr>
 
         {% endfor %}
+
+        {% if clients|length == 0 %}
+
+        <tr>
+
+            <td colspan="8" class="text-center text-danger">
+
+                <strong>No Client Found</strong>
+
+            </td>
+
+        </tr>
+
+        {% endif %}
 
         </tbody>
 

@@ -13,6 +13,28 @@
 <div class="container mt-5">
 
     <h2 class="mb-4">All Assigned Tasks</h2>
+    <form method="GET" action="/tasks" class="mb-4">
+
+    <div class="input-group">
+
+        <input
+            type="text"
+            name="search"
+            class="form-control"
+            placeholder="Search Task, Employee or Status"
+            value="{{ request.args.get('search','') }}">
+
+        <button class="btn btn-primary">
+            Search
+        </button>
+
+        <a href="/tasks" class="btn btn-secondary">
+            Reset
+        </a>
+
+    </div>
+
+    </form>
 
     <table class="table table-bordered table-hover">
 
@@ -63,6 +85,19 @@
         </tr>
 
         {% endfor %}
+        {% if tasks|length == 0 %}
+
+        <tr>
+
+            <td colspan="7" class="text-center text-danger">
+
+                <strong>No Task Found</strong>
+
+            </td>
+
+        </tr>
+
+        {% endif %}
 
         </tbody>
 
